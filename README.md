@@ -10,7 +10,7 @@
 
 ![](screenshots/01_selected.png)
 ![](screenshots/02_edit_modus.png)
-![](screenshots/03_edit_button.png)
+![](screenshots/03_button_edit.png)
 ![](screenshots/04_settings.png)
 
 
