@@ -8,9 +8,9 @@
 
 ## Screenshots
 
-![](screenshots/01_welcome.png)
-![](screenshots/02_selected.png)
-![](screenshots/03_edit_modus.png)
+![](screenshots/01_selected.png)
+![](screenshots/02_edit_modus.png)
+![](screenshots/03_edit_button.png)
 ![](screenshots/04_settings.png)
 
 
