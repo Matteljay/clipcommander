@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=ClipCommander
+Comment=Clipboard selection monitor
+Exec=clipcommander.py
+Terminal=false
+Icon=clipcommander
+Categories=Office;
+Encoding=UTF-8
+
+
