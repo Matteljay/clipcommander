@@ -9,10 +9,10 @@
 
 ## Screenshots
 
-![](https://github.com/Matteljay/labelpush/blob/master/screenshots/01_selected.png)
-![](https://github.com/Matteljay/labelpush/blob/master/screenshots/02_edit_modus.png)
-![](https://github.com/Matteljay/labelpush/blob/master/screenshots/03_button_edit.png)
-![](https://github.com/Matteljay/labelpush/blob/master/screenshots/04_settings.png)
+![](https://github.com/Matteljay/clipcommander/blob/master/screenshots/01_selected.png)
+![](https://github.com/Matteljay/clipcommander/blob/master/screenshots/02_edit_modus.png)
+![](https://github.com/Matteljay/clipcommander/blob/master/screenshots/03_button_edit.png)
+![](https://github.com/Matteljay/clipcommander/blob/master/screenshots/04_settings.png)
 
 
 ## Introduction
