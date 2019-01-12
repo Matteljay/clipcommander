@@ -121,6 +121,6 @@ motivate me :-)
 
 ## Contact info & donations
 
-See the [contact](https://github.com/Matteljay/labelpush/blob/master/CONTACT.md) file.
+See the [contact](https://github.com/Matteljay/clipcommander/blob/master/CONTACT.md) file.
 
 
