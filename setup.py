@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 # to install directly, invoke via pip: sudo pip3 install .
-# to generate a whl file: ./setup.py bdist_wheel
+# packages for PyPI.org: ./setup.py sdist bdist_wheel && twine upload dist/*
 
 import setuptools
 import os, sys, re

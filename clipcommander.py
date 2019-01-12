@@ -27,44 +27,36 @@
 # Donate if you find this app useful, educational or you like to motivate more projects like this.
 #
 # XMR:  4B6YQvbL9jqY3r1cD3ZvrDgGrRpKvifuLVb5cQnYZtapWUNovde7K5rc1LVGw3HhmTiijX21zHKSqjQtwxesBEe6FhufRGS
-# DASH: XnMLmmisNAyDMT3Sr1rhpfAPfkMjDyUiwJ
-# NANO: xrb_3yztgrd4exg16r6dwxwc64fasdipi81aoe8yindsin7o31trqsgqanfi9fym
-# ETH:  0x7C64707BD877f9cFBf0B304baf200cB1BB197354
 # BTC:  14VZcizduTvUTesw4T9yAHZ7GjDDmXZmVs
+# ETH:  0x7C64707BD877f9cFBf0B304baf200cB1BB197354
+# DASH: XnMLmmisNAyDMT3Sr1rhpfAPfkMjDyUiwJ
+# NANO: nano_3yztgrd4exg16r6dwxwc64fasdipi81aoe8yindsin7o31trqsgqanfi9fym
 #
 
 # IMPORTS
 # Kivy cross platform graphical user interface
 from kivy import __version__ as KIVY_VERSION
 from kivy.app import App
-from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.button import Button
-#from kivy.uix.widget import Widget
 from kivy.lang import Builder
 from kivy.config import Config
-Config.set('input', 'mouse', 'mouse,disable_multitouch') # right mouse behave like left button
-Config.set('graphics', 'position', 'custom')
-Config.set('graphics','left', 100)
-Config.set('graphics','top', 0)
-Config.set('graphics', 'width', '600')
-Config.set('graphics', 'height', '360')
-Config.set('graphics', 'window_state', 'hidden') # start hidden
+Config.set('graphics', 'window_state', 'hidden') # start hidden, fix Window.hide()
 from kivy.core.window import Window
 from kivy.uix.screenmanager import ScreenManager, Screen, NoTransition
 from kivy.clock import Clock
-# Regex string manipulation
+# Character string tricks
+from distutils.version import StrictVersion
 import re
 # System
 from subprocess import Popen, PIPE
 import os, sys
-import shutil
-from pathlib import Path
-from argparse import ArgumentParser
+from shutil import which
+from pathlib import Path # find resources
 import socket # Linux single instance check
-import psutil
+import signal # graceful Ctrl+c (SIGINT, SIGTERM)
 
 name = 'clipcommander'
-version = '2018.12.11'
+version = '2019.01.12'
 def_defaultcfg = {
     'startmodus': 'normal',
     'showbar': '1',
@@ -72,6 +64,7 @@ def_defaultcfg = {
     'reflags': 'IGNORECASE',
     'storewin': '0',
     'storewindata' : '',
+    'scaninterval' : '0.5',
     'btn1_text': 'Download best video',
     'btn1_patt': '(https://www\.youtube\.com/watch\?v=[\w-]{11})',
     'btn1_cmd': 'xterm -e youtube-dl $1',
@@ -93,6 +86,8 @@ def_jsondata = '''[
     "section": "settings", "key": "reflags" },
     { "type": "bool", "title": "Store window pos & size", "desc": "Usage: 1: toggle OFF 2: move and drag window 3: toggle ON",
     "section": "settings", "key": "storewin" },
+    { "type": "numeric", "title": "Clipboard scan interval", "desc": "How fast the window will show up, lower value = faster",
+    "section": "settings", "key": "scaninterval" },
     { "type": "title", "title": "Release version: ''' + version + ''' - Matteljay" }
     ]'''
 col_white = [1, 1, 1, 1]
@@ -303,18 +298,19 @@ class ClipCommanderApp(App):
             return
         # command executable check here on t_cmd
         cmd = w_input.t_cmd.text.split(maxsplit=1)
-        if shutil.which(cmd[0]) is None:
+        if which(cmd[0]) is None:
             w_input.simmsg.color = col_bad
             w_input.simmsg.text = 'Command not found!'
             w_input.t_cmd.focus = True
             return
         # add button
         if self.usedbtn: # clicked red button
+            self.usedbtn.text = w_input.t_name.text
             self.usedbtn.patt = w_input.t_patt.text
             self.usedbtn.cmd = w_input.t_cmd.text
         else: # pressed '+'
             # check if name already exists
-            for btn in (w for w in w_main.mainbox.children if type(w) == type(Button())):
+            for btn in (w for w in w_main.mainbox.children if type(w) is Button):
                 if btn.text == w_input.t_name.text:
                     w_input.simmsg.color = col_bad
                     w_input.simmsg.text = 'Cannot add, name already exists!'
@@ -331,32 +327,29 @@ class ClipCommanderApp(App):
             w_input.t_name.text = self.usedbtn.text
             w_input.t_patt.text = self.usedbtn.patt
             w_input.t_cmd.text = self.usedbtn.cmd
-            w_input.t_name.disabled = True
-            w_input.t_patt.focus = True
             w_input.simmsg.color = col_good
             w_input.simmsg.text = 'Edit existing button'
         else:
             w_input.t_name.text = ''
             w_input.t_patt.text = ''
             w_input.t_cmd.text = ''
-            w_input.t_name.disabled = False
-            w_input.t_name.focus = True
             w_input.simmsg.color = col_good
             w_input.simmsg.text = 'Add a new button'
+        w_input.t_name.focus = True
     def btn_plusbtn(self):
         self.usedbtn = None
         screenman.current = 'input'
     def btn_toggle_edit(self):
         if w_main.editbtn.state == 'down':
             self.edit_modus = True
-            for btn in (w for w in w_main.mainbox.children if type(w) == type(Button())):
+            for btn in (w for w in w_main.mainbox.children if type(w) is Button):
                 hide_widget(btn, False) # make all visible
                 btn.background_color = [2, 0, 0, 1]
                 btn.disabled = True
             w_main.lab_hidden.text = 'Edit modus'
         else:
             self.edit_modus = False
-            for btn in (w for w in w_main.mainbox.children if type(w) == type(Button())):
+            for btn in (w for w in w_main.mainbox.children if type(w) is Button):
                 btn.background_color = col_white
                 btn.disabled = False
             # do complete rescan
@@ -376,7 +369,7 @@ class ClipCommanderApp(App):
             btn.triedswap = True
         # check if dragging to another button
         for widget in w_main.mainbox.children:
-            if type(widget) == type(Button()) and not widget == btn:
+            if type(widget) is Button and not widget == btn:
                 if widget.collide_point(*touch.pos):
                     # yes, swap button content
                     self.swapbuttons(btn, widget)
@@ -394,7 +387,7 @@ class ClipCommanderApp(App):
     def write_button_widgets_to_config(self):
         # re-index/order buttons
         poslist = [] # list of tuples containing all the info per button
-        for btn in (w for w in w_main.mainbox.children if type(w) == type(Button())):
+        for btn in (w for w in w_main.mainbox.children if type(w) is Button):
             poslist.append((btn.y, btn.text, btn.patt, btn.cmd))
         poslist.sort(key=lambda tup: tup[0], reverse=True) # sort by y-coordinate
         # clear all btns from config
@@ -456,7 +449,7 @@ class ClipCommanderApp(App):
         # match & grab clipboard text, see if button needs to be hidden
         lastmatch = None
         cnt = 0
-        for btn in (w for w in w_main.mainbox.children if type(w) == type(Button())):
+        for btn in (w for w in w_main.mainbox.children if type(w) is Button):
             btn.matchobj = re.match(btn.patt, cliptext, flags=self.reflags)
             if btn.matchobj:
                 hide_widget(btn, False) # show button
@@ -468,13 +461,8 @@ class ClipCommanderApp(App):
         if lastmatch and self.startmodus == 'hidden_runfirst':
             self.press_btn_DL(lastmatch)
         elif lastmatch or cliptext == '!showyourself':
-            self.fixed_window_show()
-    def fixed_window_show(self):
-        Window.show()
-        # maximize() and restore() make no sense but seem to work to make show() work on older SDL2 window providers
-        Window.maximize()
-        Window.restore()
-        Window.raise_window()
+            SDL_fixed_window_show()
+            Window.raise_window()
     def add_a_new_button(self, _text, patt, cmd):
         btn = Button(text=_text, font_size=20)
         btn.background_down = btn.background_normal
@@ -518,15 +506,18 @@ class ClipCommanderApp(App):
                 winstr = ' '.join(str(n) for n in [Window.left, Window.top, Window.size[0], Window.size[1]])
                 config.set('settings', 'storewindata', winstr)
                 config.write()
+        elif key == 'scaninterval':
+            Clock.unschedule(self.myclock)
+            Clock.schedule_interval(self.myclock, float(value))
     def on_start(self):
         # Pre-run requirement tests
-        if shutil.which('xclip'):
+        if which('xclip'):
             self.scancmd = ['xclip', '-o']
-        elif shutil.which('xsel'):
+        elif which('xsel'):
             self.scancmd = ['xsel', '-o']
         if not self.scancmd:
             self.bad_lockdown = 'Please install either "xclip" or "xsel" to use this app'
-        if not shutil.which('youtube-dl'):
+        if not which('youtube-dl'):
             self.bad_lockdown = 'Please install "youtube-dl" ("ffmpeg" is also recommended!)'
         # See if app can function
         cfg = self.config['settings']
@@ -536,7 +527,8 @@ class ClipCommanderApp(App):
             statuslabel.text = self.bad_lockdown
             # hide mybar
             Clock.schedule_once(lambda dt: hide_widget(w_main.mybar), 1) # doing this sooner seems defective
-            self.fixed_window_show()
+            SDL_fixed_window_show()
+            Window.raise_window()
             return
         elif self.firstrun:
             statuslabel.color = col_good
@@ -568,17 +560,20 @@ class ClipCommanderApp(App):
                 self.reflags |= getattr(re, flagstr)
         # Start responsive timer/scanner
         self.myclock(0)
-        Clock.schedule_interval(self.myclock, 1)
+        Clock.schedule_interval(self.myclock, float(cfg['scaninterval']))
     def get_application_config(self):
         self.confpath = super(type(self), self).get_application_config('~/.config/%(appname)s.ini')
         return self.confpath
     def build_config(self, config):
         self.confpath = self.get_application_config()
         if os.access(self.confpath, os.R_OK):
-            config.setdefaults('settings', {}) # don't re-create buttons that may have been deleted
+            # remove 'btnX_...' keys from config, don't re-create buttons that may have been deleted
+            for key in list(def_defaultcfg.keys()):
+                if key[:3] == 'btn':
+                    del def_defaultcfg[key]
         else:
             self.firstrun = True
-            config.setdefaults('settings', def_defaultcfg)
+        config.setdefaults('settings', def_defaultcfg)
     def build_settings(self, settings):
         settings.add_json_panel('ClipCommander', self.config, data=def_jsondata)
     def on_request_close(self, args):
@@ -612,10 +607,19 @@ class ClipCommanderApp(App):
         if self.startmodus[:6] == 'hidden':
             print('[HIDDEN ]')
         else:
-            self.fixed_window_show()
+            SDL_fixed_window_show()
+            Window.raise_window()
         # wrap close request to handle startmodus
         Window.bind(on_request_close=self.on_request_close)
         return screenman
+
+def SDL_fixed_window_show():
+    Window.show()
+    if SDL_needfix:
+        # doing this on >= 2.0.9 causes problems (lose Window focus)
+        # not doing this on lesser versions ignores Window.show() altogether
+        Window.maximize()
+        Window.restore()
 
 #
 ########### NON-GUI Below
@@ -630,18 +634,28 @@ def hide_widget(wid, dohide=True):
         wid.saved_attrs = wid.height, wid.size_hint_y, wid.opacity, wid.disabled
         wid.height, wid.size_hint_y, wid.opacity, wid.disabled = 0, None, 0, True
 
-def fatal_err(line):
-    print('ERROR: ' + line, file=sys.stderr)
+def fatal_err(*args):
+    print('ERROR:', *args, file=sys.stderr)
     sys.exit(1)
 
 def pymod_versioncheck(module_name, module_version, required_version):
-    def normalize(v):
-        return [int(x) for x in re.sub(r'(\.0+)*$','', v).split('.')]
-    if normalize(module_version) < normalize(required_version):
-        fatal_err('{} requires version {} (current version is {})'.format(module_name, required_version, module_version))
-        sys.exit(1)
+    if StrictVersion(module_version) < StrictVersion(required_version):
+        fatal_err(module_name, 'requires version', required_version, 'current verion is', module_version)
     else:
-        print(':: {} version is: {}'.format(module_name, module_version))
+        print('::', module_name, 'version is:', module_version)
+
+def signal_intterm(sig, frame):
+    print('[EXITNOW]')
+    sys.exit(0)
+
+def linux_SDL_getversion():
+    SDLpatt = 'libSDL\d*-(\d*).(\d*).so.0.(\d*).0'
+    for root, dirnames, filenames in os.walk('/usr/lib'):
+        for filename in filenames:
+            matchobj = re.match(SDLpatt, filename)
+            if matchobj:
+                return '.'.join(matchobj.groups())
+    return 0
 
 #
 ##### Main program entry point (after reading all the functions above!)
@@ -659,8 +673,23 @@ if __name__ == '__main__':
     # cross-platform check for app single instance, requires package 'tendo'
     #from tendo import singleton
     #me = singleton.SingleInstance()
-    # check requirements
+    # check module requirements
     pymod_versioncheck('kivy', KIVY_VERSION, '1.10.1')
+    # SDL version/fix
+    linux_SDLver = linux_SDL_getversion()
+    if(linux_SDLver):
+        print(':: found Linux SDL version:', linux_SDLver)
+        SDL_needfix = StrictVersion(linux_SDLver) < StrictVersion('2.0.9')
+    else:
+        SDL_needfix = False
+    # handle signals more gracefully
+    signal.signal(signal.SIGINT, signal_intterm)
+    signal.signal(signal.SIGTERM, signal_intterm)
+    # Kivy config settings
+    Config.set('input', 'mouse', 'mouse,disable_multitouch') # right mouse behave like left button
+    Window.left, Window.top = 100, 0
+    Window.size = 600, 360
+    #Window.hide() # defective in Kivy, creates ugly artifacts
     # Create the screen manager
     screenman = ScreenManager(transition=NoTransition())
     screenman.add_widget(w_main)

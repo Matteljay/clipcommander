@@ -1,4 +1,5 @@
-# ClipCommander - Clipboard selection monitor youtube-dl GUI front-end
+# ClipCommander
+## Clipboard selection monitor youtube-dl GUI front-end
 
 - License: MIT License
 - Author: Matteljay
@@ -8,26 +9,26 @@
 
 ## Screenshots
 
-![](screenshots/01_selected.png)
-![](screenshots/02_edit_modus.png)
-![](screenshots/03_button_edit.png)
-![](screenshots/04_settings.png)
+![](https://github.com/Matteljay/labelpush/blob/master/screenshots/01_selected.png)
+![](https://github.com/Matteljay/labelpush/blob/master/screenshots/02_edit_modus.png)
+![](https://github.com/Matteljay/labelpush/blob/master/screenshots/03_button_edit.png)
+![](https://github.com/Matteljay/labelpush/blob/master/screenshots/04_settings.png)
 
 
 ## Introduction
 
-ClipCommander is a clipboard selection monitor. It is pre-configured
-to work as a GUI/front-end for 
-[youtube-dl](https://rg3.github.io/youtube-dl/).
-Simply copy a YouTube video link to the clipboard and ClipCommander
-will pop-up with several download format options.
+ClipCommander is a clipboard selection monitor. It is a productivity tool pre-configured
+to work as a GUI/front-end for [youtube-dl](https://rg3.github.io/youtube-dl/).
+It can be considered a Firefox Plug-in without requiring integration into the add-on menu.
+Simply copy a YouTube video link to the clipboard and ClipCommander will pop-up with several download format options.
+
 ClipCommander is highly configurable to execute any terminal/shell
-command based on a clipboard selection using Python RegEx string magic
-(Regular expressions). The actions are highly customizable.
-For example text-to-speech 
-[festival](http://www.cstr.ed.ac.uk/projects/festival/) or clipboard
-logging operations. On Linux based systems you will get instant
-feedback based on your text selections (no Ctrl+c required!)
+command based on a clipboard selection using [Python RegEx](https://docs.python.org/3/howto/regex.html)
+string magic (Regular expressions). The actions are highly customizable.
+
+For example text-to-speech [festival](http://www.cstr.ed.ac.uk/projects/festival/),
+BitTorrent client [transmission](https://transmissionbt.com/), custom clipboard logging operations and more.
+On Linux based systems you will get instant feedback based on your text selections (no Ctrl+c required!)
 
 
 ## Installation
@@ -36,7 +37,7 @@ Package dependencies are kept to a minimum. The proper installation guides
 for your system can be found via these links:
 
 - [Kivy](https://kivy.org/doc/stable/installation/installation.html) & [Pillow](https://python-pillow.org/)
-Version 1.10.1 with SDL2 window provider are required! (NOT 1.9 with PyGame)
+Version 1.10.1 with SDL2 window provider are required! (NOT 1.9 with PyGame).
 An updated Python Imaging Library is always recommended with a graphical Python program.
 
 - [pip3](https://github.com/pypa/pip) & [setuptools](https://github.com/pypa/setuptools)
@@ -53,7 +54,7 @@ All the magic required to get videos cleanly from YouTube. Must be very up-to-da
 For most up-to-date Debian based systems like Ubuntu Linux and Linux Mint this should work *as root*:
 
     add-apt-repository ppa:kivy-team/kivy
-    apt-get install python3-kivy python3-pip python3-setuptools git xterm xclip ffmpeg
+    apt-get install python3-kivy python3-pip python3-setuptools xterm xclip ffmpeg
     pip3 install --upgrade youtube-dl pillow clipcommander
 
 ### Arch Linux
@@ -67,9 +68,19 @@ For the more up-to-date Arch Linux (Manjaro) simply run *as root*:
 
 It is easy to daemonize ClipCommander. That means it can run silently in the background. It can pop up
 only when the clipboard selection is matched against one of the user defined conditions.
-To accomplish this daemon/hidden modus, enable this in the app's options (see screenshot above).
-Also, to make ClipCommander start at system boot, simply add this app to the **Startup Applications**
+To accomplish this hidden modus, enable the option in the app (see screenshot above).
+
+When in hidden modus, you can force showing the GUI by selecting the text **!showyourself**
+
+To make ClipCommander start at system boot, simply add this app to the **Startup Applications**
 list on your desktop (e.g. Cinnamon).
+
+
+## How to launch
+
+When finished, the shortcut icon can be found from your menu-bar in the **Office** category.
+If the icon does not show up, you may need to restart your desktop.
+Alternatively, open your graphical user terminal and type **clipcommander.py**
 
 
 ## For developers, hackers and testers
@@ -99,7 +110,7 @@ filesystem. Again, extract the downloaded archive. Then run:
 ### Other UNIX
 
 Other flavors of Linux are untested but there is no reason for them
-not to work. Slackware, Gentoo, openSUSE, Fedora, Red Hat, Mandriva, CentOS,...
+not to work. Slackware, Gentoo, openSUSE, Fedora, Red Hat, Mandriva, CentOS, macOS,...
 
 ### Android, iPhone and Windows
 
@@ -110,6 +121,6 @@ motivate me :-)
 
 ## Contact info & donations
 
-See [contact](CONTACT.md) file.
+See the [contact](https://github.com/Matteljay/labelpush/blob/master/CONTACT.md) file.
 
 
